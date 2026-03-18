@@ -342,6 +342,8 @@ function saveTransaction() {
         }
     }
 
+    const amt = parseInt(raw);
+
     if (!name || !date || isNaN(amt)) { 
         Swal.fire({
             icon: 'error',
