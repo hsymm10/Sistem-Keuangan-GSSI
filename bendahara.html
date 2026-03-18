@@ -636,11 +636,15 @@ function formatCurrency(input) {
   input.value = parseInt(value).toLocaleString("id-ID");
 }
 
-let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+let transactions = JSON.parse(localStorage.getItem("gssi_bendahara_transactions")) || [];
 let filtered = [...transactions];
 let pieChart, barChart;
-let currentUserRole = sessionStorage.getItem("userRole") || null;
-const ADMIN_PASSWORD = "bph_gssi"; // User can change this later
+let currentUserRole = sessionStorage.getItem("gssi_role") || null;
+const ADMIN_PASSWORD = "bph_gssi"; 
+
+function saveTransactions() {
+  localStorage.setItem("gssi_bendahara_transactions", JSON.stringify(transactions));
+}
 
 function login(role) {
   if (role === 'admin') {
@@ -655,12 +659,12 @@ function login(role) {
     currentUserRole = 'member';
   }
   
-  sessionStorage.setItem("userRole", currentUserRole);
+  sessionStorage.setItem("gssi_role", currentUserRole);
   initApp();
 }
 
 function logout() {
-  sessionStorage.removeItem("userRole");
+  sessionStorage.removeItem("gssi_role");
   location.reload();
 }
 
@@ -676,9 +680,9 @@ function initApp() {
   document.getElementById("displayRole").innerText = currentUserRole === 'admin' ? 'BPH (Hanya Edit)' : 'Anggota (Hanya Lihat)';
   
   // Set Org Name & Names
-  const savedOrg = localStorage.getItem("orgName") || "GSSI (Gerakan Siswa Siswi Indonesia)";
-  const savedKetua = localStorage.getItem("ketuaName") || "";
-  const savedBendahara = localStorage.getItem("bendaharaName") || "";
+  const savedOrg = localStorage.getItem("gssi_orgName") || "GSSI (Gerakan Siswa Siswi Indonesia)";
+  const savedKetua = localStorage.getItem("gssi_ketuaName") || "";
+  const savedBendahara = localStorage.getItem("gssi_bendaharaName") || "";
   
   document.getElementById("orgName").value = savedOrg;
   document.getElementById("displayOrgName").innerText = savedOrg;
@@ -700,9 +704,9 @@ function initApp() {
 }
 
 // Update listeners
-document.getElementById("orgName").addEventListener("change", (e) => localStorage.setItem("orgName", e.target.value));
-document.getElementById("ketuaName").addEventListener("change", (e) => localStorage.setItem("ketuaName", e.target.value));
-document.getElementById("bendaharaName").addEventListener("change", (e) => localStorage.setItem("bendaharaName", e.target.value));
+document.getElementById("orgName").addEventListener("change", (e) => localStorage.setItem("gssi_orgName", e.target.value));
+document.getElementById("ketuaName").addEventListener("change", (e) => localStorage.setItem("gssi_ketuaName", e.target.value));
+document.getElementById("bendaharaName").addEventListener("change", (e) => localStorage.setItem("gssi_bendaharaName", e.target.value));
 
 document.getElementById("orgName").addEventListener("input", function(e) {
   document.getElementById("displayOrgName").innerText = e.target.value;
@@ -772,7 +776,7 @@ function saveTransaction(type,date,desc,amount,category,receipt,editIndex){
   if(editIndex===""){ transactions.push({type,date,desc,amount,category,receipt}); }
   else{ transactions[editIndex]={type,date,desc,amount,category,receipt}; document.getElementById("editIndex").value=""; }
 
-  localStorage.setItem("transactions",JSON.stringify(transactions));
+  saveTransactions();
   filtered=[...transactions]; renderTable(filtered);
 
   document.getElementById("desc").value=""; document.getElementById("amount").value="";
@@ -793,7 +797,7 @@ function editTransaction(index){
 function deleteTransaction(index){
   if(confirm("Yakin mau hapus?")){
     transactions.splice(index,1);
-    localStorage.setItem("transactions",JSON.stringify(transactions));
+    saveTransactions();
     filtered=[...transactions]; renderTable(filtered);
   }
 }
@@ -961,7 +965,7 @@ function restoreData(){
   const reader=new FileReader();
   reader.onload=e=>{
     try{ const restored=JSON.parse(e.target.result);
-      if(Array.isArray(restored)){ transactions=[...transactions,...restored]; localStorage.setItem("transactions",JSON.stringify(transactions)); filtered=[...transactions]; renderTable(filtered); alert("Data di-restore!"); }
+      if(Array.isArray(restored)){ transactions=[...transactions,...restored]; saveTransactions(); filtered=[...transactions]; renderTable(filtered); alert("Data di-restore!"); }
       else alert("Format salah!");
     }catch{ alert("Gagal baca file!"); }
   };
